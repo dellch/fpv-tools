@@ -1,0 +1,16 @@
+{
+  "name": "fpv-tools",
+  "version": "0.1.0",
+  "scripts": {
+    "lint:md": "markdownlint '**/*.md' --ignore node_modules",
+    "fix:md": "markdownlint '**/*.md' --ignore node_modules --fix",
+    "lint:html": "htmlhint '**/*.html' --ignore node_modules",
+    "format": "prettier --write '**/*.{html,md,json}'",
+    "lint": "npm run lint:md && npm run lint:html"
+  },
+  "devDependencies": {
+    "htmlhint": "^1.9.2",
+    "markdownlint-cli": "^0.49.0",
+    "prettier": "^3.9.0"
+  }
+}
