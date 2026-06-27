@@ -8,8 +8,8 @@ Built using React, Tailwind CSS, and hosted for free via GitHub Pages.
 
 ## 🚀 Live Tools
 
-* [**Field Charging Safety Simulator:**](https://dellch.github.io/fpv-tools/field-charger/) Calculate if your vehicle's starting battery can safely handle charging your drone or RC packs without leaving you stranded.
-  * **Link:** `dellch.github.io/fpv-tools/field-charger/`
+- [**Field Charging Safety Simulator:**](https://dellch.github.io/fpv-tools/field-charger/) Calculate if your vehicle's starting battery can safely handle charging your drone or RC packs without leaving you stranded.
+  - **Link:** `dellch.github.io/fpv-tools/field-charger/`
 
 ## 📁 Repository Structure
 
@@ -23,4 +23,5 @@ fpv-tools/
 ```
 
 ## 🤖 Acknowledgments
+
 The core HTML, CSS (Tailwind), and React logic for these tools were generated with the assistance of Google Gemini (Gemini 1.5 Pro).

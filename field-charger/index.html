@@ -1,189 +1,242 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RC Field Charging Simulator</title>
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-</head>
-<body class="bg-gray-100 p-4 md:p-8 font-sans">
-  <div id="root"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RC Field Charging Simulator</title>
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    function ChargingSimulator() {
-      const [batteryType, setBatteryType] = useState('agm');
-      const [carAh, setCarAh] = useState(90);
-      const [packMah, setPackMah] = useState(1500);
-      const [cells, setCells] = useState(6);
-      const [numPacks, setNumPacks] = useState(4);
+    <script
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+      crossorigin
+    ></script>
 
-      const EFFICIENCY = 0.85;
-      const CELL_VOLTAGE = 3.7;
-      const CAR_VOLTAGE = 12;
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body class="bg-gray-100 p-4 md:p-8 font-sans">
+    <div id="root"></div>
 
-      // Calculations
-      const totalCarWh = carAh * CAR_VOLTAGE;
-      const droneWh = (packMah / 1000) * (cells * CELL_VOLTAGE) * numPacks;
-      const consumedWh = droneWh / EFFICIENCY;
-      const remainingWh = Math.max(0, totalCarWh - consumedWh);
-      const remainingAh = remainingWh / CAR_VOLTAGE;
-      const socPercent = Math.max(0, (remainingWh / totalCarWh) * 100);
+    <script type="text/babel">
+      const { useState, useEffect } = React;
 
-      // Safety Logic
-      let status = '';
-      let statusColor = '';
-      let message = '';
+      function ChargingSimulator() {
+        const [batteryType, setBatteryType] = useState("agm");
+        const [carAh, setCarAh] = useState(90);
+        const [packMah, setPackMah] = useState(1500);
+        const [cells, setCells] = useState(6);
+        const [numPacks, setNumPacks] = useState(4);
 
-      if (batteryType === 'agm') {
-        if (socPercent >= 50) {
-          status = 'Safe to Start';
-          statusColor = 'bg-green-500';
-          message = 'Plenty of capacity remaining. Engine will crank confidently.';
-        } else if (socPercent >= 40) {
-          status = 'Caution';
-          statusColor = 'bg-yellow-500';
-          message = 'Approaching deep discharge. Consider starting the engine soon.';
+        const EFFICIENCY = 0.85;
+        const CELL_VOLTAGE = 3.7;
+        const CAR_VOLTAGE = 12;
+
+        // Calculations
+        const totalCarWh = carAh * CAR_VOLTAGE;
+        const droneWh = (packMah / 1000) * (cells * CELL_VOLTAGE) * numPacks;
+        const consumedWh = droneWh / EFFICIENCY;
+        const remainingWh = Math.max(0, totalCarWh - consumedWh);
+        const remainingAh = remainingWh / CAR_VOLTAGE;
+        const socPercent = Math.max(0, (remainingWh / totalCarWh) * 100);
+
+        // Safety Logic
+        let status = "";
+        let statusColor = "";
+        let message = "";
+
+        if (batteryType === "agm") {
+          if (socPercent >= 50) {
+            status = "Safe to Start";
+            statusColor = "bg-green-500";
+            message =
+              "Plenty of capacity remaining. Engine will crank confidently.";
+          } else if (socPercent >= 40) {
+            status = "Caution";
+            statusColor = "bg-yellow-500";
+            message =
+              "Approaching deep discharge. Consider starting the engine soon.";
+          } else {
+            status = "Critical Risk / No-Start Warning";
+            statusColor = "bg-red-500";
+            message =
+              "Danger of battery damage and failure to start the vehicle.";
+          }
         } else {
-          status = 'Critical Risk / No-Start Warning';
-          statusColor = 'bg-red-500';
-          message = 'Danger of battery damage and failure to start the vehicle.';
+          // Standard Flooded
+          if (socPercent >= 70) {
+            status = "Safe to Start";
+            statusColor = "bg-green-500";
+            message =
+              "Plenty of capacity remaining for a standard starter battery.";
+          } else if (socPercent >= 50) {
+            status = "Caution";
+            statusColor = "bg-yellow-500";
+            message =
+              "Standard batteries degrade quickly below 70%. Start the engine soon.";
+          } else {
+            status = "Critical Risk / No-Start Warning";
+            statusColor = "bg-red-500";
+            message =
+              "High risk of permanent battery damage and failure to start.";
+          }
         }
-      } else {
-        // Standard Flooded
-        if (socPercent >= 70) {
-          status = 'Safe to Start';
-          statusColor = 'bg-green-500';
-          message = 'Plenty of capacity remaining for a standard starter battery.';
-        } else if (socPercent >= 50) {
-          status = 'Caution';
-          statusColor = 'bg-yellow-500';
-          message = 'Standard batteries degrade quickly below 70%. Start the engine soon.';
-        } else {
-          status = 'Critical Risk / No-Start Warning';
-          statusColor = 'bg-red-500';
-          message = 'High risk of permanent battery damage and failure to start.';
-        }
+
+        return (
+          <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-slate-800 text-white p-6">
+              <h1 class="text-2xl font-bold">
+                Field Charging Safety Simulator
+              </h1>
+              <p class="text-sm text-slate-300 mt-2">
+                Calculate if your vehicle can safely start after charging RC
+                batteries.
+              </p>
+            </div>
+
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Inputs Section */}
+              <div class="space-y-6">
+                <h2 class="text-lg font-semibold border-b pb-2">
+                  Vehicle Setup
+                </h2>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">
+                    Battery Type
+                  </label>
+                  <select
+                    value={batteryType}
+                    onChange={(e) => setBatteryType(e.target.value)}
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                  >
+                    <option value="agm">AGM / Dual-Purpose</option>
+                    <option value="flooded">Standard Flooded Lead Acid</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">
+                    Car Battery Capacity: {carAh} Ah
+                  </label>
+                  <input
+                    type="range"
+                    min="30"
+                    max="120"
+                    step="5"
+                    value={carAh}
+                    onChange={(e) => setCarAh(Number(e.target.value))}
+                    class="w-full mt-2"
+                  />
+                </div>
+
+                <h2 class="text-lg font-semibold border-b pb-2 mt-8">
+                  RC Batteries
+                </h2>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">
+                    Capacity per pack: {packMah} mAh
+                  </label>
+                  <input
+                    type="range"
+                    min="300"
+                    max="5000"
+                    step="50"
+                    value={packMah}
+                    onChange={(e) => setPackMah(Number(e.target.value))}
+                    class="w-full mt-2"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">
+                    Cells per pack: {cells}S
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="6"
+                    step="1"
+                    value={cells}
+                    onChange={(e) => setCells(Number(e.target.value))}
+                    class="w-full mt-2"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">
+                    Packs to charge: {numPacks}
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="20"
+                    step="1"
+                    value={numPacks}
+                    onChange={(e) => setNumPacks(Number(e.target.value))}
+                    class="w-full mt-2"
+                  />
+                </div>
+              </div>
+
+              {/* Results Section */}
+              <div class="bg-gray-50 p-6 rounded-lg border flex flex-col justify-between">
+                <div>
+                  <h2 class="text-lg font-semibold mb-4 text-center">
+                    Safety Status
+                  </h2>
+                  <div
+                    class={`text-white text-center py-3 px-4 rounded-lg font-bold ${statusColor}`}
+                  >
+                    {status}
+                  </div>
+                  <p class="text-sm text-center text-gray-600 mt-3 h-12">
+                    {message}
+                  </p>
+                </div>
+
+                <div class="space-y-4 mt-6">
+                  <div class="flex justify-between items-center border-b pb-2">
+                    <span class="text-gray-600 text-sm">Remaining SoC</span>
+                    <span class="font-bold text-lg">
+                      {socPercent.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center border-b pb-2">
+                    <span class="text-gray-600 text-sm">
+                      Remaining Capacity
+                    </span>
+                    <span class="font-mono text-md">
+                      {remainingAh.toFixed(1)} Ah
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center border-b pb-2">
+                    <span class="text-gray-600 text-sm">
+                      Total Consumed (incl. 85% eff)
+                    </span>
+                    <span class="font-mono text-md text-red-600">
+                      -{consumedWh.toFixed(1)} Wh
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-600 text-sm">
+                      Total Vehicle Capacity
+                    </span>
+                    <span class="font-mono text-md">{totalCarWh} Wh</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       }
 
-      return (
-        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-          <div class="bg-slate-800 text-white p-6">
-            <h1 class="text-2xl font-bold">Field Charging Safety Simulator</h1>
-            <p class="text-sm text-slate-300 mt-2">Calculate if your vehicle can safely start after charging RC batteries.</p>
-          </div>
-          
-          <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            {/* Inputs Section */}
-            <div class="space-y-6">
-              <h2 class="text-lg font-semibold border-b pb-2">Vehicle Setup</h2>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Battery Type</label>
-                <select 
-                  value={batteryType} 
-                  onChange={(e) => setBatteryType(e.target.value)}
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
-                >
-                  <option value="agm">AGM / Dual-Purpose</option>
-                  <option value="flooded">Standard Flooded Lead Acid</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">
-                  Car Battery Capacity: {carAh} Ah
-                </label>
-                <input 
-                  type="range" min="30" max="120" step="5" 
-                  value={carAh} onChange={(e) => setCarAh(Number(e.target.value))}
-                  class="w-full mt-2"
-                />
-              </div>
-
-              <h2 class="text-lg font-semibold border-b pb-2 mt-8">RC Batteries</h2>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">
-                  Capacity per pack: {packMah} mAh
-                </label>
-                <input 
-                  type="range" min="300" max="5000" step="50" 
-                  value={packMah} onChange={(e) => setPackMah(Number(e.target.value))}
-                  class="w-full mt-2"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">
-                  Cells per pack: {cells}S
-                </label>
-                <input 
-                  type="range" min="1" max="6" step="1" 
-                  value={cells} onChange={(e) => setCells(Number(e.target.value))}
-                  class="w-full mt-2"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">
-                  Packs to charge: {numPacks}
-                </label>
-                <input 
-                  type="range" min="1" max="20" step="1" 
-                  value={numPacks} onChange={(e) => setNumPacks(Number(e.target.value))}
-                  class="w-full mt-2"
-                />
-              </div>
-            </div>
-
-            {/* Results Section */}
-            <div class="bg-gray-50 p-6 rounded-lg border flex flex-col justify-between">
-              <div>
-                <h2 class="text-lg font-semibold mb-4 text-center">Safety Status</h2>
-                <div class={`text-white text-center py-3 px-4 rounded-lg font-bold ${statusColor}`}>
-                  {status}
-                </div>
-                <p class="text-sm text-center text-gray-600 mt-3 h-12">
-                  {message}
-                </p>
-              </div>
-
-              <div class="space-y-4 mt-6">
-                <div class="flex justify-between items-center border-b pb-2">
-                  <span class="text-gray-600 text-sm">Remaining SoC</span>
-                  <span class="font-bold text-lg">{socPercent.toFixed(1)}%</span>
-                </div>
-                <div class="flex justify-between items-center border-b pb-2">
-                  <span class="text-gray-600 text-sm">Remaining Capacity</span>
-                  <span class="font-mono text-md">{remainingAh.toFixed(1)} Ah</span>
-                </div>
-                <div class="flex justify-between items-center border-b pb-2">
-                  <span class="text-gray-600 text-sm">Total Consumed (incl. 85% eff)</span>
-                  <span class="font-mono text-md text-red-600">-{consumedWh.toFixed(1)} Wh</span>
-                </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-gray-600 text-sm">Total Vehicle Capacity</span>
-                  <span class="font-mono text-md">{totalCarWh} Wh</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<ChargingSimulator />);
-  </script>
-</body>
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<ChargingSimulator />);
+    </script>
+  </body>
 </html>
