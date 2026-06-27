@@ -4,9 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RC Field Charging Simulator</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script
       src="https://unpkg.com/react@18/umd/react.production.min.js"
       crossorigin
@@ -15,14 +13,13 @@
       src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
       crossorigin
     ></script>
-
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   </head>
   <body class="bg-gray-100 p-4 md:p-8 font-sans">
     <div id="root"></div>
 
     <script type="text/babel">
-      const { useState, useEffect } = React;
+      const { useState } = React;
 
       function ChargingSimulator() {
         const [batteryType, setBatteryType] = useState("agm");
@@ -30,59 +27,41 @@
         const [packMah, setPackMah] = useState(1500);
         const [cells, setCells] = useState(6);
         const [numPacks, setNumPacks] = useState(4);
+        const [efficiency, setEfficiency] = useState(85);
 
-        const EFFICIENCY = 0.85;
         const CELL_VOLTAGE = 3.7;
         const CAR_VOLTAGE = 12;
 
         // Calculations
         const totalCarWh = carAh * CAR_VOLTAGE;
         const droneWh = (packMah / 1000) * (cells * CELL_VOLTAGE) * numPacks;
-        const consumedWh = droneWh / EFFICIENCY;
+        const consumedWh = droneWh / (efficiency / 100);
         const remainingWh = Math.max(0, totalCarWh - consumedWh);
         const remainingAh = remainingWh / CAR_VOLTAGE;
         const socPercent = Math.max(0, (remainingWh / totalCarWh) * 100);
 
         // Safety Logic
-        let status = "";
-        let statusColor = "";
-        let message = "";
+        let status = "",
+          statusColor = "",
+          message = "";
+        const threshold = batteryType === "agm" ? [50, 40] : [70, 50];
 
-        if (batteryType === "agm") {
-          if (socPercent >= 50) {
-            status = "Safe to Start";
-            statusColor = "bg-green-500";
-            message =
-              "Plenty of capacity remaining. Engine will crank confidently.";
-          } else if (socPercent >= 40) {
-            status = "Caution";
-            statusColor = "bg-yellow-500";
-            message =
-              "Approaching deep discharge. Consider starting the engine soon.";
-          } else {
-            status = "Critical Risk / No-Start Warning";
-            statusColor = "bg-red-500";
-            message =
-              "Danger of battery damage and failure to start the vehicle.";
-          }
+        if (socPercent >= threshold[0]) {
+          status = "Safe to Start";
+          statusColor = "bg-green-500";
+          message =
+            "Plenty of capacity remaining. Engine will crank confidently.";
+        } else if (socPercent >= threshold[1]) {
+          status = "Caution";
+          statusColor = "bg-yellow-500";
+          message =
+            batteryType === "agm"
+              ? "Approaching deep discharge. Consider starting soon."
+              : "Standard batteries degrade quickly below 70%. Start engine soon.";
         } else {
-          // Standard Flooded
-          if (socPercent >= 70) {
-            status = "Safe to Start";
-            statusColor = "bg-green-500";
-            message =
-              "Plenty of capacity remaining for a standard starter battery.";
-          } else if (socPercent >= 50) {
-            status = "Caution";
-            statusColor = "bg-yellow-500";
-            message =
-              "Standard batteries degrade quickly below 70%. Start the engine soon.";
-          } else {
-            status = "Critical Risk / No-Start Warning";
-            statusColor = "bg-red-500";
-            message =
-              "High risk of permanent battery damage and failure to start.";
-          }
+          status = "Critical Risk / No-Start Warning";
+          statusColor = "bg-red-500";
+          message = "High risk of failure to start. Do not discharge further.";
         }
 
         return (
@@ -98,12 +77,10 @@
             </div>
 
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Inputs Section */}
               <div class="space-y-6">
                 <h2 class="text-lg font-semibold border-b pb-2">
                   Vehicle Setup
                 </h2>
-
                 <div>
                   <label class="block text-sm font-medium text-gray-700">
                     Battery Type
@@ -111,13 +88,12 @@
                   <select
                     value={batteryType}
                     onChange={(e) => setBatteryType(e.target.value)}
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                    class="mt-1 block w-full rounded-md border p-2"
                   >
                     <option value="agm">AGM / Dual-Purpose</option>
                     <option value="flooded">Standard Flooded Lead Acid</option>
                   </select>
                 </div>
-
                 <div>
                   <label class="block text-sm font-medium text-gray-700">
                     Car Battery Capacity: {carAh} Ah
@@ -133,10 +109,29 @@
                   />
                 </div>
 
-                <h2 class="text-lg font-semibold border-b pb-2 mt-8">
+                <h2 class="text-lg font-semibold border-b pb-2 mt-4">
+                  Charging Parameters
+                </h2>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">
+                    Charger Efficiency
+                    <sup class="text-xs">
+                      <a href="#about-efficiency">*</a>
+                    </sup>
+                  </label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="100"
+                    step="1"
+                    value={efficiency}
+                    onChange={(e) => setEfficiency(Number(e.target.value))}
+                    class="w-full mt-2"
+                  />
+                </div>
+                <h2 class="text-lg font-semibold border-b pb-2 mt-4">
                   RC Batteries
                 </h2>
-
                 <div>
                   <label class="block text-sm font-medium text-gray-700">
                     Capacity per pack: {packMah} mAh
@@ -151,7 +146,6 @@
                     class="w-full mt-2"
                   />
                 </div>
-
                 <div>
                   <label class="block text-sm font-medium text-gray-700">
                     Cells per pack: {cells}S
@@ -166,7 +160,6 @@
                     class="w-full mt-2"
                   />
                 </div>
-
                 <div>
                   <label class="block text-sm font-medium text-gray-700">
                     Packs to charge: {numPacks}
@@ -183,7 +176,6 @@
                 </div>
               </div>
 
-              {/* Results Section */}
               <div class="bg-gray-50 p-6 rounded-lg border flex flex-col justify-between">
                 <div>
                   <h2 class="text-lg font-semibold mb-4 text-center">
@@ -210,27 +202,46 @@
                     <span class="text-gray-600 text-sm">
                       Remaining Capacity
                     </span>
-                    <span class="font-mono text-md">
-                      {remainingAh.toFixed(1)} Ah
+                    <span class="font-mono text-md whitespace-nowrap">
+                      {remainingAh.toFixed(1)}&nbsp;Ah
                     </span>
                   </div>
                   <div class="flex justify-between items-center border-b pb-2">
                     <span class="text-gray-600 text-sm">
-                      Total Consumed (incl. 85% eff)
+                      Total Consumed
+                      <br />
+                      (including eff. loss)<sup class="text-xs">*</sup>
                     </span>
-                    <span class="font-mono text-md text-red-600">
-                      -{consumedWh.toFixed(1)} Wh
+                    <span class="font-mono text-md text-red-600 whitespace-nowrap">
+                      -{consumedWh.toFixed(1)}&nbsp;Wh
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-gray-600 text-sm">
                       Total Vehicle Capacity
                     </span>
-                    <span class="font-mono text-md">{totalCarWh} Wh</span>
+                    <span class="font-mono text-md whitespace-nowrap">
+                      {totalCarWh}&nbsp;Wh
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
+            <footer class="p-6 text-xs text-gray-500 border-t">
+              <p id="about-efficiency">
+                * Real-world efficiency is affected by many factors, including
+                wire lengths, ambient temperature, and charger quality. Check{" "}
+                <a
+                  href="https://batteryuniversity.com"
+                  class="underline hover:text-gray-700"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  batteryuniversity.com
+                </a>{" "}
+                for more detailed information.
+              </p>
+            </footer>
           </div>
         );
       }
