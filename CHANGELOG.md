@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `field-charger`: A Field Charging Safety Simulator for RC and FPV pilots.
+- `field-charging`: A Field Charging Safety Simulator for RC and FPV pilots.
   - Interactive Watt-hour calculator for 12V vehicle battery limits.
   - Dynamic safety thresholds based on battery chemistry (AGM vs. Flooded Lead Acid).
   - Compensation factor (85% efficiency) for DC-to-DC balance chargers.
