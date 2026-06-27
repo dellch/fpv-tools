@@ -228,7 +228,25 @@
               </div>
             </div>
             <footer class="p-6 text-xs text-gray-500 border-t">
-              <p id="about-efficiency">
+              <div>
+                <p class="font-semibold text-gray-700">
+                  Calculation Methodology:
+                </p>
+                <ul class="list-disc ml-4 mt-1 space-y-1 font-mono">
+                  <li>
+                    Consumed Wh = (Pack capacity Wh × Number of packs) /
+                    (Efficiency / 100)
+                  </li>
+                  <li>
+                    Remaining Wh = Total vehicle capacity Wh - Consumed Wh
+                  </li>
+                  <li>
+                    State of Charge (SoC) = (Remaining Wh / Total vehicle
+                    capacity Wh) × 100
+                  </li>
+                </ul>
+              </div>
+              <p id="about-efficiency" class="mt-4">
                 * Real-world efficiency is affected by many factors, including
                 wire lengths, ambient temperature, and charger quality. Check{" "}
                 <a
