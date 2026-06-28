@@ -13,6 +13,9 @@ clean:# Remove node_modules
 	@rm -rf node_modules
 
 ## Development
+serve: # Start browser-sync
+	@npx browser-sync start --server --files "index.html, *.css, *.js" --no-open
+
 test: # Run tests and report status (Currently just linters)
 	@echo "Running verification...\n"
 	@if $(MAKE) lint; \
