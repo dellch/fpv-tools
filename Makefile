@@ -1,5 +1,3 @@
-# checkmake:ignore=maxbodylength
-
 .PHONY: all install clean test lint lint-md lint-html lint-make help
 .DEFAULT_GOAL := help
 
